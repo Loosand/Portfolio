@@ -1,5 +1,12 @@
 /**
- * Disclaimer: This component is not entirely my own
+ * ElasticCursor 组件 - 创建一个具有弹性动画效果的自定义鼠标光标
+ * 
+ * 功能特点：
+ * 1. 跟随鼠标移动的弹性光标效果
+ * 2. 悬停在可交互元素上时会自动调整形状
+ * 3. 在加载状态下显示进度条效果
+ * 4. 在移动设备上自动禁用
+ * 5. 支持深色模式
  */
 
 "use client";
@@ -16,7 +23,7 @@ import { useMouse } from "@/hooks/use-mouse";
 import { usePreloader } from "../preloader";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
-// Gsap Ticker Function
+// GSAP动画计时器钩子函数 - 用于处理动画循环
 function useTicker(callback: any, paused: boolean) {
   useEffect(() => {
     if (!paused && callback) {
@@ -28,6 +35,7 @@ function useTicker(callback: any, paused: boolean) {
   }, [callback, paused]);
 }
 
+// 存储GSAP动画设置器的空对象类型定义
 const EMPTY = {} as {
   x: Function;
   y: Function;
@@ -37,6 +45,8 @@ const EMPTY = {} as {
   sx?: Function;
   sy?: Function;
 };
+
+// 实例化钩子 - 用于保存动画状态
 function useInstance(value = {}) {
   const ref = useRef(EMPTY);
   if (ref.current === EMPTY) {
@@ -45,17 +55,18 @@ function useInstance(value = {}) {
   return ref.current;
 }
 
-// Function for Mouse Move Scale Change
+// 计算鼠标移动的缩放比例
 function getScale(diffX: number, diffY: number) {
   const distance = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2));
   return Math.min(distance / 735, 0.35);
 }
 
-// Function For Mouse Movement Angle in Degrees
+// 计算鼠标移动的角度（度数）
 function getAngle(diffX: number, diffY: number) {
   return (Math.atan2(diffY, diffX) * 180) / Math.PI;
 }
 
+// 获取可悬停元素的边界矩形
 function getRekt(el: HTMLElement) {
   if (el.classList.contains("cursor-can-hover"))
     return el.getBoundingClientRect();
@@ -68,23 +79,27 @@ function getRekt(el: HTMLElement) {
   return null;
 }
 
+// 光标直径常量
 const CURSOR_DIAMETER = 50;
 
 function ElasticCursor() {
+  // 获取预加载状态和加载进度
   const { loadingPercent, isLoading } = usePreloader();
+  // 检测是否为移动设备
   const isMobile = useMediaQuery("(max-width: 768px)");
 
-  // React Refs for Jelly Blob and Text
+  // 弹性光标的DOM引用和状态
   const jellyRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
+  // 获取鼠标位置
   const { x, y } = useMouse();
 
-  // Save pos and velocity Objects
+  // 存储位置和速度的对象
   const pos = useInstance(() => ({ x: 0, y: 0 }));
   const vel = useInstance(() => ({ x: 0, y: 0 }));
   const set = useInstance();
 
-  // Set GSAP quick setter Values on useLayoutEffect Update
+  // 设置GSAP动画的快速设置器
   useLayoutEffect(() => {
     set.x = gsap.quickSetter(jellyRef.current, "x", "px");
     set.y = gsap.quickSetter(jellyRef.current, "y", "px");
@@ -94,14 +109,14 @@ function ElasticCursor() {
     set.width = gsap.quickSetter(jellyRef.current, "width", "px");
   }, []);
 
-  // Start Animation loop
+  // 动画循环函数 - 处理光标的变形和旋转效果
   const loop = useCallback(() => {
     if (!set.width || !set.sx || !set.sy || !set.r) return;
-    // Calculate angle and scale based on velocity
-    var rotation = getAngle(+vel.x, +vel.y); // Mouse Move Angle
-    var scale = getScale(+vel.x, +vel.y); // Blob Squeeze Amount
+    // 基于速度计算角度和缩放
+    var rotation = getAngle(+vel.x, +vel.y);
+    var scale = getScale(+vel.x, +vel.y);
 
-    // Set GSAP quick setter Values on Loop Function
+    // 根据不同状态设置光标样式
     if (!isHovering && !isLoading) {
       set.x(pos.x);
       set.y(pos.y);
@@ -114,21 +129,27 @@ function ElasticCursor() {
     }
   }, [isHovering, isLoading]);
 
+  // 追踪光标是否已移动
   const [cursorMoved, setCursorMoved] = useState(false);
-  // Run on Mouse Move
+
+  // 处理鼠标移动事件
   useLayoutEffect(() => {
     if (isMobile) return;
-    // Caluclate Everything Function
+
     const setFromEvent = (e: MouseEvent) => {
       if (!jellyRef.current) return;
       if (!cursorMoved) {
         setCursorMoved(true);
       }
+
       const el = e.target as HTMLElement;
       const hoverElemRect = getRekt(el);
+
+      // 处理悬停状态
       if (hoverElemRect) {
         const rect = el.getBoundingClientRect();
         setIsHovering(true);
+        // 设置悬停时的光标样式
         gsap.to(jellyRef.current, {
           rotate: 0,
           duration: 0,
@@ -142,9 +163,8 @@ function ElasticCursor() {
           duration: 1.5,
           ease: "elastic.out(1, 0.3)",
         });
-
-        // return;
       } else {
+        // 重置为默认光标样式
         gsap.to(jellyRef.current, {
           borderRadius: 50,
           width: CURSOR_DIAMETER,
@@ -152,20 +172,20 @@ function ElasticCursor() {
         });
         setIsHovering(false);
       }
-      // Mouse X and Y
+
+      // 更新光标位置和计算速度
       const x = e.clientX;
       const y = e.clientY;
 
-      // Animate Position and calculate Velocity with GSAP
       gsap.to(pos, {
         x: x,
         y: y,
         duration: 1.5,
         ease: "elastic.out(1, 0.5)",
         onUpdate: () => {
-          // @ts-ignore
+          // @ts-ignore 由于 vel 的类型定义限制，这里需要忽略类型检查
           vel.x = (x - pos.x) * 1.2;
-          // @ts-ignore
+          // @ts-ignore 由于 vel 的类型定义限制，这里需要忽略类型检查
           vel.y = (y - pos.y) * 1.2;
         },
       });
@@ -179,18 +199,24 @@ function ElasticCursor() {
     };
   }, [isLoading]);
 
+  // 处理加载状态下的光标样式
   useEffect(() => {
     if (!jellyRef.current) return;
-    jellyRef.current.style.height = "2rem"; // "8rem";
+    jellyRef.current.style.height = "2rem";
     jellyRef.current.style.borderRadius = "1rem";
     jellyRef.current.style.width = loadingPercent * 2 + "vw";
   }, [loadingPercent]);
 
+  // 启动动画循环
   useTicker(loop, isLoading || !cursorMoved || isMobile);
+  
+  // 在移动设备上不显示自定义光标
   if (isMobile) return null;
-  // Return UI
+
+  // 渲染光标UI
   return (
     <>
+      {/* 弹性光标元素 */}
       <div
         ref={jellyRef}
         id={"jelly-id"}
@@ -204,6 +230,7 @@ function ElasticCursor() {
           backdropFilter: "invert(100%)",
         }}
       ></div>
+      {/* 中心点光标 */}
       <div
         className="w-3 h-3 rounded-full fixed translate-x-[-50%] translate-y-[-50%] pointer-events-none transition-none duration-300"
         style={{

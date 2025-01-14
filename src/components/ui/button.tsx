@@ -44,6 +44,12 @@ export interface ButtonProps
   children?: ReactNode;
 }
 
+/**
+ * 递归添加类名到子元素
+ * @param children - 需要添加类名的子元素
+ * @param className - 要添加的类名
+ * @returns 添加类名后的子元素
+ */
 const addClassNameRecursively = (
   children: ReactNode,
   className: string

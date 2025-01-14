@@ -8,6 +8,9 @@ interface LenisProps {
   isInsideModal?: boolean;
 }
 
+/**
+ * 平滑滚动组件
+ */
 function SmoothScroll({ children, isInsideModal = false }: LenisProps) {
   const lenis = useLenis(({ scroll }) => {
     // called every scroll

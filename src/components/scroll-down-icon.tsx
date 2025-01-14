@@ -2,6 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
+/**
+ * ScrollDownIcon 组件 - 实现滚动条向下滚动时显示的图标
+ * @returns 返回一个 AnimatePresence 组件，包含一个 motion.div 组件，用于显示图标
+ */
 const ScrollDownIcon = () => {
   const [show, setShow] = useState(true);
   useEffect(() => {

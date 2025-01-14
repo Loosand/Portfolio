@@ -15,6 +15,9 @@ import { config } from "@/data/config";
 import SocketContextProvider from "@/contexts/socketio";
 import RemoteCursors from "@/components/realtime/remote-cursors";
 
+/**
+ * @loosand 完善的 metadata 能提升 SEO 效果，增加网站的流量和曝光度。
+ */
 export const metadata: Metadata = {
   title: config.title,
   description: config.description.long,
@@ -59,6 +62,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={[archivoBlack.className].join(" ")}>
       <head>
+        {/* 使用 umami 进行网站分析，可以查看网站的流量和用户行为 */}
         <Script
           defer
           src={process.env.UMAMI_DOMAIN}

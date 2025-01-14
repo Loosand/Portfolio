@@ -1,4 +1,8 @@
+/**
+ * 键盘组件
+ */
 "use client";
+
 import React, { Suspense, useEffect, useRef, useState } from "react";
 import { Application, SPEObject, SplineEvent } from "@splinetool/runtime";
 import gsap from "gsap";

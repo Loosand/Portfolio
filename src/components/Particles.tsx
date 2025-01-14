@@ -12,6 +12,10 @@ interface ParticlesProps {
   refresh?: boolean;
 }
 
+/**
+ * @keywords 粒子背景效果
+ * 使用 canvas 绘制粒子背景，可以提升网站的视觉效果和用户体验。
+ */
 export default function Particles({
   className = "",
   quantity = 30,
